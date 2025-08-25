@@ -2,6 +2,8 @@
 # 📦 5-week Internship Deliverables  
 This repository contains all weekly deliverables from my **Data Science Internship Program** at **Lamina Studios**. Each week highlights real-world projects across logistics, warehousing, AI microservices, dashboards, and full-stack integration.
 
+The projects accomplished in the entire internship can be classified into individual tasks and team tasks. For team tasks, I worked closely with my teammate, John Lloyd Legaspi, whom should be credited for the full implementation of two tasks in this repository: insights_trends_dashboard and week4-team-task. 
+
 ---
 
 ## 🛠️ Technologies Used
