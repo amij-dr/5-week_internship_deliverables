@@ -1,7 +1,8 @@
 # 5-week_internship_deliverables
 This repository contains the weekly deliverables for my Data Science internship program at Lamina Studios. 
 
-Directory
+## Directory
+```
 projects/
 ├── insights_trends_dashboard/   # Insights & Trends Dashboard for Thumbworx
 ├── week2-idv/                   # Individual: Data Analytics & AI Microservice (Flask)
@@ -33,3 +34,4 @@ weekly-docs/
 │   ├── content.pdf
 │   └── recording.mp4
 └── README.md
+```
