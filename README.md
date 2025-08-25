@@ -24,14 +24,15 @@ Each folder contains code and assets related to individual or team deliverables 
 
 ```
 projects/
-├── week2-idv/                    # Individual Task: Data Analytics & AI Microservice (Flask)
+├── insights_trends_dashboard/   # Thumbworx Insights Dashboard (Flask + Chart.js)
+├── week2-idv/                   # Individual Task: Data Analytics & AI Microservice (Flask)
 ├── week2-team-task/             # Team Task: Driver Profile Dashboard
 ├── week3-team-task/             # Forecasting & Backend Integration
 ├── week4-idv-task/              # Smart Warehouse & Inventory Barcode Task
 ├── week4-team-task/             # Inventory Analytics Dashboard
-├── insights_trends_dashboard/   # Week 6: Thumbworx Insights Dashboard (Flask + Chart.js)
 ├── week5-final_output/          # Week 7: Fullstack Logistics System (Flask, Laravel, Next.js)
-└── README.md                    # (Optional) Code-level instructions per project
+└── README.md                    
+
 ```
 
 ---
@@ -41,6 +42,10 @@ Contains weekly documentation such as notebooks, PDFs, presentation decks, datas
 
 ```
 weekly-docs/
+├── insights_trends_reporting/
+│   ├── presentation.pdf
+│   ├── content.pdf
+│   └── recording.mp4
 ├── week1/
 │   ├── presentation.pdf
 │   └── summary_report.pdf
@@ -55,9 +60,5 @@ weekly-docs/
 ├── week5_task_documentation.pdf
 ├── week6_task_documentation.pdf
 ├── week7_task_documentation.pdf
-├── insights_trends_reporting/
-│   ├── presentation.pdf
-│   ├── content.pdf
-│   └── recording.mp4
 └── README.md  # (Optional) Summary of weekly outputs
 ```
