@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>ETA Tracker</title></head>
+<body>
+    <h2>ETA Delivery Tracker</h2>
+    <button onclick="getLiveETA()">Get Live ETA</button>
+    <p id="etaResult"></p>
+
+    <script>
+        async function getLiveETA() {
+            const response = await fetch('/live_eta');
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById('etaResult').innerText = data.error;
+            } else {
+                document.getElementById('etaResult').innerText = 
+                    `ETA: ${data.eta_minutes} minutes from ${data.current_location}`;
+            }
+        }
+    </script>
+</body>
+</html>

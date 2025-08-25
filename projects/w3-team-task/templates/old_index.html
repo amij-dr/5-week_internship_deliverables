@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>ETA Tracker</title></head>
+<body>
+    <h2>ETA Delivery Tracker</h2>
+    <button onclick="getETA()">Check ETA</button>
+	<p id="result"></p>
+ 
+    <script>
+	async function getETA() {
+    	const response = await fetch('/predict_eta', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                current_lat: 14.5995,
+                current_lng: 120.9842,
+                dropoff_lat: 14.6091,
+                dropoff_lng: 121.0223
+            })
+    	});
+    	const data = await response.json();
+        document.getElementById('result').innerText =
+ 	       `ETA: ${data.eta_minutes} minutes | Status: ${data.message}`;
+	}
+    </script>
+</body>
+</html>
