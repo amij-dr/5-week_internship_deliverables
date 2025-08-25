@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights & Trends Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a1d29;
+            --secondary-color: #252946;
+            --accent-color: #3b82f6;
+            --accent-light: #60a5fa;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-light: #9ca3af;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.5;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+        }
+
+        .header {
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 100%;
+            gap: 2rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .header h1 {
+            font-size: 1.00rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.25rem 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-group:hover {
+            border-color: var(--accent-light);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+        }
+
+        .control-group i {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            width: 14px;
+            text-align: center;
+        }
+
+        .controls label {
+            display: none;
+        }
+
+        .controls select {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            background: transparent;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: all 0.2s ease;
+            min-width: 80px;
+            cursor: pointer;
+        }
+
+        .controls select:focus {
+            outline: none;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+            color: white;
+            border: none;
+            padding: 0.4rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-1px) scale(1.05);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0) scale(1);
+        }
+
+        .main-content {
+            padding: 0.75rem;
+            overflow: auto;
+            height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .charts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .chart-row {
+            display: flex;
+            gap: 0.75rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .chart-row-1 .chart-container:nth-child(1) {
+            flex: 1.75;
+        }
+
+        .chart-row-1 .chart-container:nth-child(2) {
+            flex: 1.25;
+        }
+
+        .chart-row-2 .chart-container {
+            flex: 1;
+        }
+
+        .chart-container {
+            background: var(--surface);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+            height: 100%;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .chart-container:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .chart-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .chart-title-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-info {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 600;
+            cursor: help;
+            margin-left: 0.25rem;
+            transition: all 0.2s ease;
+            z-index: 9998;
+        }
+
+        .chart-info:hover {
+            background: var(--accent-light);
+            transform: scale(1.1);
+        }
+
+        .chart-info-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 400;
+            line-height: 1.4;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+        }
+
+        .chart-info-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .chart-toggle {
+            display: flex;
+            background: var(--background);
+            border-radius: 6px;
+            padding: 0.15rem;
+            gap: 0.1rem;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .toggle-btn:hover {
+            color: var(--accent-color);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .toggle-btn i {
+            font-size: 0.6rem;
+        }
+
+        /* Driver Filter Styles */
+        .driver-filter-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .driver-filter-toggle {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .driver-filter-toggle:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+        }
+
+        .driver-filter-toggle i {
+            font-size: 0.65rem;
+        }
+
+        .driver-filter-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            min-width: 220px;
+            max-height: 300px;
+            overflow: hidden;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+
+        .driver-filter-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .driver-filter-header {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--background);
+        }
+
+        .filter-action-btn {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .filter-action-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .driver-filter-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .driver-filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .driver-filter-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .driver-filter-item input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .driver-filter-item label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .chart-wrapper canvas {
+            max-height: 100% !important;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 150px;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: var(--danger-color);
+            text-align: center;
+            padding: 1rem;
+            background: #fef2f2;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #fecaca;
+        }
+
+        /* Global Tooltip */
+        .global-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 400;
+            line-height: 1.4;
+            white-space: normal;
+            max-width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .global-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .global-tooltip.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1400px) {
+            .chart-row {
+                flex-direction: column;
+            }
+
+            .chart-row-1 .chart-container:nth-child(1),
+            .chart-row-1 .chart-container:nth-child(2),
+            .chart-row-2 .chart-container {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .chart-row {
+                flex-direction: column;
+            }
+
+            .chart-row-1 .chart-container:nth-child(1),
+            .chart-row-1 .chart-container:nth-child(2),
+            .chart-row-2 .chart-container {
+                flex: 1;
+            }
+            
+            .main-content {
+                height: calc(100vh - 120px);
+                padding: 0.5rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .controls {
+                gap: 0.4rem;
+            }
+
+            .control-group {
+                padding: 0.2rem 0.4rem;
+            }
+
+            .controls select {
+                min-width: 70px;
+                font-size: 0.65rem;
+            }
+
+            .refresh-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
+            }
+
+            .chart-toggle {
+                padding: 0.1rem;
+            }
+
+            .toggle-btn {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .chart-row {
+                flex-direction: column;
+            }
+
+            .chart-row-1 .chart-container:nth-child(1),
+            .chart-row-1 .chart-container:nth-child(2),
+            .chart-row-2 .chart-container {
+                flex: 1;
+            }
+            
+            .main-content {
+                padding: 0.5rem;
+                height: calc(100vh - 140px);
+                overflow-y: auto;
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.3rem;
+            }
+            
+            .control-group {
+                flex: 0 0 auto;
+                min-width: 100px;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .controls select {
+                min-width: 60px;
+                font-size: 0.6rem;
+            }
+
+            .refresh-btn {
+                width: 26px;
+                height: 26px;
+                font-size: 0.65rem;
+            }
+
+            .chart-container {
+                min-height: 200px;
+            }
+
+            .chart-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.4rem;
+            }
+
+            .chart-title-left {
+                align-self: flex-start;
+            }
+
+            .chart-toggle {
+                align-self: stretch;
+            }
+
+            .toggle-btn {
+                flex: 1;
+                justify-content: center;
+                font-size: 0.6rem;
+                padding: 0.3rem 0.4rem;
+            }
+
+            .chart-info-tooltip {
+                white-space: normal;
+                max-width: 200px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h1>Insights & Trends Dashboard</h1>
+            
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <i class="fas fa-calendar-alt"></i>
+                        <select id="daysRange">
+                            <option value="7">7 days</option>
+                            <option value="30" selected>30 days</option>
+                            <option value="60">60 days</option>
+                            <option value="90">90 days</option>
+                        </select>
+                    </div>
+                    
+                    <button class="refresh-btn" onclick="refreshAllData()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="dashboard-grid">
+                <div class="charts-grid">
+                    <!-- First Row: 2 charts with 1.75/3 and 1.25/3 ratio -->
+                    <div class="chart-row chart-row-1">
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <div class="chart-title-left">
+                                    <i class="fas fa-chart-line"></i>
+                                    Driver Performance
+                                    <div class="chart-info" title="Shows driver ratings over time (scale 1-5).">
+                                        i
+                                        <div class="chart-info-tooltip">
+                                            Shows driver ratings over time (scale 1-5).<br>
+                                            Track performance trends and identify top performers.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="driver-filter-container">
+                                    <button class="driver-filter-toggle" id="driverFilterToggle">
+                                        <i class="fas fa-users"></i>
+                                    </button>
+                                    <div class="driver-filter-dropdown" id="driverFilterDropdown">
+                                        <div class="driver-filter-header">
+                                            <button class="filter-action-btn" id="selectAllDrivers">Select All</button>
+                                            <button class="filter-action-btn" id="clearAllDrivers">Clear All</button>
+                                        </div>
+                                        <div class="driver-filter-list" id="driverFilterList">
+                                            <!-- Driver checkboxes will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="driverPerformanceChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <div class="chart-title-left">
+                                    <i class="fas fa-calendar-day"></i>
+                                    Activity Analytics
+                                    <div class="chart-info" title="Toggle between daily and hourly delivery patterns.">
+                                        i
+                                        <div class="chart-info-tooltip">
+                                            Toggle between daily and hourly delivery patterns.<br>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart-toggle">
+                                    <button class="toggle-btn active" data-view="daily">
+                                        <i class="fas fa-calendar-day"></i>
+                                        Daily
+                                    </button>
+                                    <button class="toggle-btn" data-view="hourly">
+                                        <i class="fas fa-clock"></i>
+                                        Hourly
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="activityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Row: 3 charts equally distributed -->
+                    <div class="chart-row chart-row-2">
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <div class="chart-title-left">
+                                    <i class="fas fa-headset"></i>
+                                    Support Issues
+                                    <div class="chart-info" title="Distribution of support ticket categories.">
+                                        i
+                                        <div class="chart-info-tooltip">
+                                            Distribution of support ticket categories.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="supportIssuesChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <div class="chart-title-left">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Delivery Destinations
+                                    <div class="chart-info" title="Frequency delivery destinations.">
+                                        i
+                                        <div class="chart-info-tooltip">
+                                            Most frequent delivery destinations.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart-toggle">
+                                    <button class="toggle-btn active" id="deliveryDestinationsSort" data-sort="desc">
+                                        <i class="fas fa-sort-amount-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="clientLocationsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <div class="chart-title-left">
+                                    <i class="fas fa-route"></i>
+                                    Route Times
+                                    <div class="chart-info" title="Average delivery time per route in minutes.">
+                                        i
+                                        <div class="chart-info-tooltip">
+                                            Average delivery time per route in minutes.<br>
+                                            Optimize routes and identify efficiency improvements.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart-toggle">
+                                    <button class="toggle-btn active" id="routeTimesSort" data-sort="desc">
+                                        <i class="fas fa-sort-amount-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="routeTimesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Tooltip -->
+    <div id="globalTooltip" class="global-tooltip"></div>
+
+    <script>
+        // Global variables
+        let charts = {};
+        let activityData = {
+            daily: null,
+            hourly: null,
+            currentView: 'daily'
+        };
+        let deliveryDestinationsData = {
+            locations: null,
+            currentSort: 'desc'
+        };
+        let routeTimesData = {
+            routes: null,
+            currentSort: 'desc'
+        };
+
+        // Extended modern chart color palette with more unique colors
+        const chartColors = [
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
+            '#8b5cf6', '#06b6d4', '#84cc16', '#f97316',
+            '#e11d48', '#059669', '#7c3aed', '#dc2626',
+            '#0891b2', '#65a30d', '#c2410c', '#be185d',
+            '#047857', '#7c2d12', '#991b1b', '#581c87',
+            '#0f766e', '#a16207', '#92400e', '#7e22ce'
+        ];
+
+        // Function to generate unique colors for any number of items
+        function generateUniqueColors(count) {
+            if (count <= chartColors.length) {
+                return chartColors.slice(0, count);
+            }
+            
+            // If we need more colors than available, generate additional ones
+            const colors = [...chartColors];
+            const additionalColors = count - chartColors.length;
+            
+            for (let i = 0; i < additionalColors; i++) {
+                // Generate HSL colors with good saturation and lightness
+                const hue = (i * 137.508) % 360; // Golden angle approximation for better distribution
+                const saturation = 60 + (i % 3) * 15; // Vary saturation: 60%, 75%, 90%
+                const lightness = 45 + (i % 4) * 10; // Vary lightness: 45%, 55%, 65%, 75%
+                colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+            }
+            
+            return colors;
+        }
+
+        // Enhanced chart default options
+        const defaultChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { 
+                        font: { size: 11, weight: 500, family: 'Inter' },
+                        color: '#6b7280',
+                        usePointStyle: true,
+                        padding: 15,
+                        boxWidth: 12,
+                        boxHeight: 12
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#1f2937',
+                    bodyColor: '#1f2937',
+                    borderColor: '#e5e7eb',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    padding: 12,
+                    displayColors: true,
+                    titleFont: { weight: 600, size: 12 },
+                    bodyFont: { weight: 500, size: 11 }
+                }
+            },
+            animation: {
+                duration: 800,
+                easing: 'easeInOutQuart'
+            },
+            elements: {
+                point: {
+                    radius: 4,
+                    hoverRadius: 6,
+                    backgroundColor: '#ffffff',
+                    borderWidth: 2
+                },
+                line: {
+                    borderWidth: 2.5,
+                    tension: 0.4
+                },
+                bar: {
+                    borderRadius: 4,
+                    borderSkipped: false
+                }
+            }
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeControls();
+            initializeToggleButtons();
+            initializeTooltips();
+            loadAllData();
+            
+            // Auto-refresh every 5 minutes
+            setInterval(loadAllData, 300000);
+        });
+
+        function initializeTooltips() {
+            const globalTooltip = document.getElementById('globalTooltip');
+            
+            // Use event delegation for better performance and reliability
+            document.addEventListener('mouseenter', function(e) {
+                if (e.target && e.target.classList && e.target.classList.contains('chart-info')) {
+                    const titleContent = e.target.getAttribute('title');
+                    if (titleContent) {
+                        const rect = e.target.getBoundingClientRect();
+                        
+                        globalTooltip.innerHTML = titleContent.replace(/\. /g, '.<br>');
+                        globalTooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                        globalTooltip.style.top = (rect.top - 10) + 'px';
+                        globalTooltip.style.transform = 'translate(-50%, -100%)';
+                        globalTooltip.classList.add('show');
+                        
+                        // Remove the title to prevent native tooltip
+                        e.target.setAttribute('data-title', titleContent);
+                        e.target.removeAttribute('title');
+                    }
+                }
+            }, true);
+            
+            document.addEventListener('mouseleave', function(e) {
+                if (e.target && e.target.classList && e.target.classList.contains('chart-info')) {
+                    globalTooltip.classList.remove('show');
+                    
+                    // Restore the title attribute
+                    const dataTitle = e.target.getAttribute('data-title');
+                    if (dataTitle) {
+                        e.target.setAttribute('title', dataTitle);
+                    }
+                }
+            }, true);
+        }
+
+        function initializeToggleButtons() {
+            // Add event listeners for activity chart toggle buttons
+            document.querySelectorAll('.toggle-btn[data-view]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const view = this.dataset.view;
+                    
+                    // Handle activity chart toggle
+                    const activityToggleButtons = this.closest('.chart-toggle').querySelectorAll('.toggle-btn');
+                    activityToggleButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update current view and refresh chart
+                    activityData.currentView = view;
+                    updateActivityChart();
+                });
+            });
+            
+            // Add event listener for delivery destinations sort button
+            const deliveryDestinationsSortBtn = document.getElementById('deliveryDestinationsSort');
+            if (deliveryDestinationsSortBtn) {
+                deliveryDestinationsSortBtn.addEventListener('click', function() {
+                    const currentSort = this.dataset.sort;
+                    const icon = this.querySelector('i');
+                    
+                    // Toggle between desc and asc
+                    if (currentSort === 'desc') {
+                        this.dataset.sort = 'asc';
+                        icon.className = 'fas fa-sort-amount-up';
+                        deliveryDestinationsData.currentSort = 'asc';
+                    } else {
+                        this.dataset.sort = 'desc';
+                        icon.className = 'fas fa-sort-amount-down';
+                        deliveryDestinationsData.currentSort = 'desc';
+                    }
+                    
+                    // Update chart
+                    updateDeliveryDestinationsChart();
+                });
+            }
+            
+            // Add event listener for route times sort button
+            const routeTimesSortBtn = document.getElementById('routeTimesSort');
+            if (routeTimesSortBtn) {
+                routeTimesSortBtn.addEventListener('click', function() {
+                    const currentSort = this.dataset.sort;
+                    const icon = this.querySelector('i');
+                    
+                    // Toggle between desc and asc
+                    if (currentSort === 'desc') {
+                        this.dataset.sort = 'asc';
+                        icon.className = 'fas fa-sort-amount-up';
+                        routeTimesData.currentSort = 'asc';
+                    } else {
+                        this.dataset.sort = 'desc';
+                        icon.className = 'fas fa-sort-amount-down';
+                        routeTimesData.currentSort = 'desc';
+                    }
+                    
+                    // Update chart
+                    updateRouteTimesChart();
+                });
+            }
+        }
+
+        function initializeControls() {
+            // Load driver filter options using current day range
+            loadDriverOptions();
+            
+            // Initialize driver filter dropdown functionality
+            initializeDriverFilter();
+
+            // Add event listeners
+            document.getElementById('daysRange').addEventListener('change', function() {
+                loadDriverOptions(); // Reload driver options when day range changes
+                loadAllData();
+            });
+        }
+
+        function initializeDriverFilter() {
+            const filterToggle = document.getElementById('driverFilterToggle');
+            const filterDropdown = document.getElementById('driverFilterDropdown');
+            const selectAllBtn = document.getElementById('selectAllDrivers');
+            const clearAllBtn = document.getElementById('clearAllDrivers');
+
+            // Toggle dropdown visibility
+            filterToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                filterDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!filterToggle.contains(e.target) && !filterDropdown.contains(e.target)) {
+                    filterDropdown.classList.remove('show');
+                }
+            });
+
+            // Select all drivers
+            selectAllBtn.addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('.driver-filter-item input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+                loadDriverPerformance();
+            });
+
+            // Clear all drivers
+            clearAllBtn.addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('.driver-filter-item input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                loadDriverPerformance();
+            });
+        }
+
+        function loadDriverOptions() {
+            const days = document.getElementById('daysRange').value;
+            const driverFilterList = document.getElementById('driverFilterList');
+            
+            // Clear existing options
+            driverFilterList.innerHTML = '';
+            
+            fetch(`/api/driver-performance?days=${days}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        data.data.forEach((driver, index) => {
+                            const filterItem = document.createElement('div');
+                            filterItem.className = 'driver-filter-item';
+                            
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.id = `driver-${index}`;
+                            checkbox.value = driver.driver_name;
+                            checkbox.checked = index < 4; // Select first 4 drivers by default
+                            
+                            const label = document.createElement('label');
+                            label.htmlFor = `driver-${index}`;
+                            label.textContent = driver.driver_name;
+                            
+                            filterItem.appendChild(checkbox);
+                            filterItem.appendChild(label);
+                            driverFilterList.appendChild(filterItem);
+                            
+                            // Add change event listener
+                            checkbox.addEventListener('change', loadDriverPerformance);
+                            
+                            // Make the whole item clickable
+                            filterItem.addEventListener('click', function(e) {
+                                if (e.target !== checkbox) {
+                                    checkbox.checked = !checkbox.checked;
+                                    loadDriverPerformance();
+                                }
+                            });
+                        });
+                    }
+                })
+                .catch(error => console.error('Error loading drivers:', error));
+        }
+
+        function loadAllData() {
+            const chartIds = ['driverPerformanceChart', 'supportIssuesChart', 'activityChart', 
+                             'clientLocationsChart', 'routeTimesChart'];
+            
+            loadDriverPerformance();
+            loadSupportIssues();
+            loadDeliveryActivity();
+            loadClientLocations();
+            loadRouteDeliveryTimes();
+        }
+
+        function loadDriverPerformance() {
+            const days = document.getElementById('daysRange').value;
+            
+            // Get selected drivers from checkboxes
+            const selectedDrivers = [];
+            const checkboxes = document.querySelectorAll('.driver-filter-item input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                selectedDrivers.push(checkbox.value);
+            });
+
+            let url = `/api/driver-performance?days=${days}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Filter data based on selected drivers
+                        let filteredData = data.data;
+                        if (selectedDrivers.length > 0) {
+                            filteredData = data.data.filter(driver => 
+                                selectedDrivers.includes(driver.driver_name)
+                            );
+                        }
+                        createDriverPerformanceChart(filteredData);
+                    } else {
+                        console.error('Failed to load performance data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading driver performance:', error);
+                });
+        }
+
+        function createDriverPerformanceChart(data) {
+            const ctx = document.getElementById('driverPerformanceChart');
+            if (!ctx) {
+                console.error('Canvas element not found');
+                return;
+            }
+            
+            if (charts.driverPerformance) {
+                charts.driverPerformance.destroy();
+            }
+
+            // Check if no data is available
+            if (!data || data.length === 0) {
+                const container = ctx.closest('.chart-wrapper');
+                container.innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i> No driver performance data available. Please select at least one driver.</div>';
+                return;
+            }
+
+            // Use all provided data (already filtered by checkboxes)
+            const driversToShow = data;
+
+            const datasets = driversToShow.map((driver, index) => ({
+                label: driver.driver_name,
+                data: driver.performance_data.map(d => ({
+                    x: new Date(d.date),
+                    y: d.rating
+                })),
+                borderColor: chartColors[index % chartColors.length],
+                backgroundColor: chartColors[index % chartColors.length] + '15',
+                tension: 0.4,
+                fill: false,
+                borderWidth: 2.5
+            }));
+
+            charts.driverPerformance = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    ...defaultChartOptions,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: { unit: 'day' },
+                            grid: { color: '#f3f4f6', drawBorder: false },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            min: 3,
+                            max: 5,
+                            grid: { color: '#f3f4f6', drawBorder: false },
+                            ticks: { 
+                                color: '#9ca3af', 
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        ...defaultChartOptions.plugins,
+                        legend: {
+                            display: driversToShow.length > 1,
+                            position: 'right',
+                            align: 'center',
+                            labels: { 
+                                font: { size: 9, weight: 500, family: 'Inter' },
+                                color: '#6b7280',
+                                usePointStyle: true,
+                                padding: 10,
+                                boxWidth: 8,
+                                boxHeight: 8
+                            }
+                        },
+                        tooltip: {
+                            ...defaultChartOptions.plugins.tooltip,
+                            callbacks: {
+                                title: function(context) {
+                                    const date = new Date(context[0].parsed.x);
+                                    return date.toLocaleDateString();
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} stars`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadSupportIssues() {
+            const days = document.getElementById('daysRange').value;
+            
+            fetch(`/api/support-issues?days=${days}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        createSupportIssuesChart(data.data.tag_distribution);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading support issues:', error);
+                });
+        }
+
+        function createSupportIssuesChart(tagDistribution) {
+            const ctx = document.getElementById('supportIssuesChart').getContext('2d');
+            
+            if (charts.supportIssues) {
+                charts.supportIssues.destroy();
+            }
+
+            // Convert to array of objects for easier sorting
+            const dataArray = Object.entries(tagDistribution).map(([label, value]) => ({
+                label: label,
+                value: value
+            }));
+            
+            // Sort by value in descending order (highest to lowest)
+            dataArray.sort((a, b) => b.value - a.value);
+            
+            // Extract sorted labels and values
+            const labels = dataArray.map(item => item.label);
+            const values = dataArray.map(item => item.value);
+            
+            // Generate unique colors for each category
+            const uniqueColors = generateUniqueColors(labels.length);
+
+            charts.supportIssues = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: uniqueColors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverBorderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    ...defaultChartOptions,
+                    cutout: '60%',
+                    plugins: {
+                        ...defaultChartOptions.plugins,
+                        legend: {
+                            position: 'right',
+                            align: 'center',
+                            labels: { 
+                                font: { size: 10, weight: 500 },
+                                color: '#6b7280',
+                                padding: 8,
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                boxHeight: 8,
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                        return data.labels.map((label, i) => {
+                                            const value = data.datasets[0].data[i];
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return {
+                                                text: `${label} (${percentage}%)`,
+                                                fillStyle: data.datasets[0].backgroundColor[i],
+                                                strokeStyle: data.datasets[0].backgroundColor[i],
+                                                pointStyle: 'circle',
+                                                hidden: false,
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
+                            }
+                        },
+                        tooltip: {
+                            ...defaultChartOptions.plugins.tooltip,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadDeliveryActivity() {
+            const days = document.getElementById('daysRange').value;
+            
+            fetch(`/api/delivery-activity?days=${days}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Store both daily and hourly data
+                        activityData.daily = data.data.day_averages;
+                        activityData.hourly = data.data.hourly_totals;
+                        
+                        // Create the chart with current view
+                        updateActivityChart();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading delivery activity:', error);
+                });
+        }
+
+        function updateActivityChart() {
+            if (activityData.currentView === 'daily' && activityData.daily) {
+                createDailyActivityChart(activityData.daily);
+            } else if (activityData.currentView === 'hourly' && activityData.hourly) {
+                createHourlyActivityChart(activityData.hourly);
+            }
+        }
+
+        function createDailyActivityChart(dayAverages) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            
+            if (charts.activity) {
+                charts.activity.destroy();
+            }
+
+            const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const labels = dayOrder.filter(day => dayAverages[day]);
+            const values = labels.map(day => Math.round(dayAverages[day]));
+
+            charts.activity = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(day => day.substr(0, 3)),
+                    datasets: [{
+                        label: 'Deliveries',
+                        data: values,
+                        backgroundColor: chartColors[0] + '80',
+                        borderColor: chartColors[0],
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    ...defaultChartOptions,
+                    plugins: {
+                        ...defaultChartOptions.plugins,
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#9ca3af', font: { size: 10, weight: 500 } }
+                        },
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: '#f3f4f6', drawBorder: false },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createHourlyActivityChart(hourlyTotals) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            
+            if (charts.activity) {
+                charts.activity.destroy();
+            }
+
+            const labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+            const values = labels.map((_, hour) => hourlyTotals[hour] || 0);
+
+            charts.activity = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.map((_, i) => i % 3 === 0 ? labels[i] : ''),
+                    datasets: [{
+                        label: 'Deliveries',
+                        data: values,
+                        borderColor: chartColors[1],
+                        backgroundColor: chartColors[1] + '25',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2.5
+                    }]
+                },
+                options: {
+                    ...defaultChartOptions,
+                    plugins: {
+                        ...defaultChartOptions.plugins,
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#f3f4f6', drawBorder: false },
+                            ticks: { color: '#9ca3af', font: { size: 9 } }
+                        },
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: '#f3f4f6', drawBorder: false },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadClientLocations() {
+            fetch('/api/client-locations?limit=8')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Store the data globally
+                        deliveryDestinationsData.locations = data.data;
+                        
+                        // Create the chart with current sort
+                        updateDeliveryDestinationsChart();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading client locations:', error);
+                });
+        }
+
+        function updateDeliveryDestinationsChart() {
+            if (deliveryDestinationsData.locations) {
+                createClientLocationsChart(deliveryDestinationsData.locations, deliveryDestinationsData.currentSort);
+            }
+        }
+
+        function createClientLocationsChart(locations, sortOrder = 'desc') {
+            const ctx = document.getElementById('clientLocationsChart').getContext('2d');
+            
+            if (charts.clientLocations) {
+                charts.clientLocations.destroy();
+            }
+
+            // Sort locations based on the sortOrder parameter
+            const sortedLocations = [...locations].sort((a, b) => {
+                if (sortOrder === 'desc') {
+                    return b.total_deliveries - a.total_deliveries;
+                } else {
+                    return a.total_deliveries - b.total_deliveries;
+                }
+            });
+            
+            const labels = sortedLocations.map(loc => loc.location.replace(', Metro Manila', ''));
+            const values = sortedLocations.map(loc => loc.total_deliveries);
+
+            charts.clientLocations = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Deliveries',
+                        data: values,
+                        backgroundColor: chartColors[2] + '80',
+                        borderColor: chartColors[2],
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    ...defaultChartOptions,
+                    plugins: {
+                        ...defaultChartOptions.plugins,
+                        legend: { display: false },
+                        datalabels: {
+                            display: function(context) {
+                                // Only show labels for top 3 locations
+                                return context.dataIndex < 3;
+                            },
+                            anchor: 'end',
+                            align: 'right',
+                            color: '#1f2937',
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            },
+                            formatter: function(value) {
+                                return value;
+                            },
+                            offset: 8
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            beginAtZero: true,
+                            grid: { color: '#f3f4f6', drawBorder: false },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#9ca3af', font: { size: 9, weight: 500 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadRouteDeliveryTimes() {
+            fetch('/api/route-delivery-times')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Store the data globally
+                        routeTimesData.routes = data.data;
+                        
+                        // Create the chart with current sort
+                        updateRouteTimesChart();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading route delivery times:', error);
+                });
+        }
+
+        function updateRouteTimesChart() {
+            if (routeTimesData.routes) {
+                createRouteTimesChart(routeTimesData.routes, routeTimesData.currentSort);
+            }
+        }
+
+        function createRouteTimesChart(routes, sortOrder = 'desc') {
+            const ctx = document.getElementById('routeTimesChart').getContext('2d');
+            
+            if (charts.routeTimes) {
+                charts.routeTimes.destroy();
+            }
+
+            // Sort routes based on the sortOrder parameter
+            const sortedRoutes = [...routes].sort((a, b) => {
+                if (sortOrder === 'desc') {
+                    return b.avg_delivery_time_minutes - a.avg_delivery_time_minutes;
+                } else {
+                    return a.avg_delivery_time_minutes - b.avg_delivery_time_minutes;
+                }
+            });
+
+            const labels = sortedRoutes.map(route => route.route.replace(' Route', '').replace('Manila-', ''));
+            const values = sortedRoutes.map(route => Math.round(route.avg_delivery_time_minutes));
+
+            charts.routeTimes = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Minutes',
+                        data: values,
+                        backgroundColor: chartColors[3] + '80',
+                        borderColor: chartColors[3],
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    ...defaultChartOptions,
+                    plugins: {
+                        ...defaultChartOptions.plugins,
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#9ca3af', font: { size: 9, weight: 500 } }
+                        },
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: '#f3f4f6', drawBorder: false },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function refreshAllData() {
+            const button = event.target.closest('.refresh-btn');
+            const icon = button.querySelector('i');
+            
+            // Add spinning animation
+            icon.classList.add('fa-spin');
+            button.disabled = true;
+            
+            loadAllData();
+            
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                button.disabled = false;
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
