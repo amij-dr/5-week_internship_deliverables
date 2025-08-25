@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hellopogi0164
+      POSTGRES_DB: warehouse
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+
+  flask:
+    build:
+      context: ./flask-scanner
+    ports:
+      - "5001:5001"
+    depends_on:
+      - postgres
+
+  laravel:
+    build:
+      context: ./laravel-backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - flask
+
+  metabase:
+    image: metabase/metabase
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
