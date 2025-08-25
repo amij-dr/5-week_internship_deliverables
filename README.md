@@ -25,7 +25,7 @@ Each folder contains code and assets related to individual or team deliverables 
 ```
 projects/
 ├── insights_trends_dashboard/   # Thumbworx Insights Dashboard (Flask + Chart.js)
-├── week2-idv/                   # Individual Task: Data Analytics & AI Microservice (Flask)
+├── week2-idv-task/              # Individual Task: Data Analytics & AI Microservice (Flask)
 ├── week2-team-task/             # Team Task: Driver Profile Dashboard
 ├── week3-team-task/             # Forecasting & Backend Integration
 ├── week4-idv-task/              # Smart Warehouse & Inventory Barcode Task
