@@ -1,5 +1,5 @@
 
-# 📦 5-Week Internship Deliverables  
+# 📦 5-week Internship Deliverables  
 This repository contains all weekly deliverables from my **Data Science Internship Program** at **Lamina Studios**. Each week highlights real-world projects across logistics, warehousing, AI microservices, dashboards, and full-stack integration.
 
 ---
@@ -60,5 +60,5 @@ weekly-docs/
 ├── week5_task_documentation.pdf
 ├── week6_task_documentation.pdf
 ├── week7_task_documentation.pdf
-└── README.md  # (Optional) Summary of weekly outputs
+└── README.md  
 ```
