@@ -1,19 +1,45 @@
-# 5-week_internship_deliverables
-This repository contains the weekly deliverables for my Data Science internship program at Lamina Studios. 
 
-## Directory
+# 📦 5-Week Internship Deliverables  
+This repository contains all weekly deliverables from my **Data Science Internship Program** at **Lamina Studios**. Each week highlights real-world projects across logistics, warehousing, AI microservices, dashboards, and full-stack integration.
+
+---
+
+## 🛠️ Technologies Used
+
+| Area                | Tools/Technologies                                |
+|---------------------|---------------------------------------------------|
+| Programming         | Python, PHP, JavaScript, TypeScript               |
+| Backend             | Flask (Python), Laravel (PHP)                     |
+| Frontend            | Next.js, Chart.js, React, Tailwind CSS            |
+| Data & Visualization| Metabase, Chart.js, Jupyter Notebooks             |
+| Database            | PostgreSQL, Redis                                 |
+| DevOps              | Docker Compose, Railway, Vercel, Render           |
+
+---
+
+## 📁 Repository Structure
+
+### `projects/` – Source Code for Weekly Projects
+Each folder contains code and assets related to individual or team deliverables for that week.
+
 ```
 projects/
-├── insights_trends_dashboard/   # Insights & Trends Dashboard for Thumbworx
-├── week2-idv/                   # Individual: Data Analytics & AI Microservice (Flask)
-├── week2-team-task/             # Team: Driver Profile Dashboard
-├── week3-team-task/             # Team: Forecasting and Laravel Integration
-├── week4-idv-task/              # Individual: Smart Warehouse Data & Barcode Scanning
-├── week4-team-task/             # Team: Inventory Analytics System
-├── week5-final_output/          # Final Output: Fullstack Integration Project (Flask + Laravel + Next.js)
-└── README.md
+├── week2-idv/                    # Individual Task: Data Analytics & AI Microservice (Flask)
+├── week2-team-task/             # Team Task: Driver Profile Dashboard
+├── week3-team-task/             # Forecasting & Backend Integration
+├── week4-idv-task/              # Smart Warehouse & Inventory Barcode Task
+├── week4-team-task/             # Inventory Analytics Dashboard
+├── insights_trends_dashboard/   # Week 6: Thumbworx Insights Dashboard (Flask + Chart.js)
+├── week5-final_output/          # Week 7: Fullstack Logistics System (Flask, Laravel, Next.js)
+└── README.md                    # (Optional) Code-level instructions per project
+```
 
+---
 
+### `weekly-docs/` – Documentation, Reports & Presentations
+Contains weekly documentation such as notebooks, PDFs, presentation decks, datasets, and reporting assets.
+
+```
 weekly-docs/
 ├── week1/
 │   ├── presentation.pdf
@@ -33,5 +59,5 @@ weekly-docs/
 │   ├── presentation.pdf
 │   ├── content.pdf
 │   └── recording.mp4
-└── README.md
+└── README.md  # (Optional) Summary of weekly outputs
 ```
